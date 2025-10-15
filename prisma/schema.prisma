@@ -1,0 +1,50 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  tasks        Task[]
+}
+
+model Task {
+  id           String     @id @default(cuid())
+  title        String
+  description  String?
+  urgency      Urgency
+  priority     Priority
+  status       TaskStatus @default(ToDo)
+  createdAt    DateTime   @default(now())
+  inProgressAt DateTime?
+  finishedAt   DateTime?
+  createdBy    User       @relation(fields: [createdById], references: [id])
+  createdById  String
+}
+
+enum Urgency {
+  Low
+  Medium
+  High
+}
+
+enum Priority {
+  Low
+  Medium
+  High
+}
+
+enum TaskStatus {
+  ToDo
+  InProgress
+  Finished
+}
