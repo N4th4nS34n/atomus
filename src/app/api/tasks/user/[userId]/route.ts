@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
-  const { userId } = params;
+  const { userId } = await params;
 
   try {
     const tasks = await prisma.task.findMany({
