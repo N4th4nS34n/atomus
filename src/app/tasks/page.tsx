@@ -1,8 +1,8 @@
-// /src/app/tasks/page.tsx
-
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 type Task = {
   id: string;
@@ -13,7 +13,7 @@ type Task = {
   status: 'ToDo' | 'InProgress' | 'Finished';
 };
 
-const userId = 'test-user-1'; // temporary until auth integration
+const userId = 'test-user-1';
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -21,6 +21,17 @@ export default function TasksPage() {
   const [description, setDescription] = useState('');
   const [urgency, setUrgency] = useState<'Low' | 'Medium' | 'High'>('Low');
   const [priority, setPriority] = useState<'Low' | 'Medium' | 'High'>('Low');
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  if (status === "loading") return <p>Loading...</p>;
+  if (status === "unauthenticated") return null;
 
   async function fetchTasks() {
     const res = await fetch(`/api/tasks/user/${userId}`);
@@ -68,7 +79,6 @@ export default function TasksPage() {
     <div className="p-6 max-w-3xl mx-auto">
       <h1 className="text-3xl font-bold mb-4">My Tasks</h1>
 
-      {/* Create task form */}
       <div className="mb-6 p-4 border rounded-lg space-y-2">
         <input
           type="text"
@@ -103,7 +113,6 @@ export default function TasksPage() {
         </div>
       </div>
 
-      {/* Task list */}
       <div className="space-y-4">
         {tasks.length === 0 && (
           <p className="text-gray-600 italic">No tasks yet. Create one above!</p>
