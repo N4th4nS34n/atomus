@@ -21,6 +21,13 @@ export default function TasksPage() {
   const [priority, setPriority] = useState<'Low' | 'Medium' | 'High'>('Low');
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [filterUrgency, setFilterUrgency] = useState("");
+  const [filterPriority, setFilterPriority] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+
+  useEffect(() => {
+    fetchTasks();
+  }, [filterUrgency, filterPriority, filterStatus]);
 
   useEffect(() => {
     if (status === "unauthenticated" || !session) {
@@ -34,7 +41,14 @@ export default function TasksPage() {
   if (status === "unauthenticated") return null;
 
   async function fetchTasks() {
-    const res = await fetch(`/api/tasks/user/${userId}`);
+    if (!userId) return;
+
+    const query = new URLSearchParams();
+    if (filterUrgency) query.append("urgency", filterUrgency);
+    if (filterPriority) query.append("priority", filterPriority);
+    if (filterStatus) query.append("status", filterStatus);
+
+    const res = await fetch(`/api/tasks/user/${userId}?${query.toString()}`);
     const data = await res.json();
     setTasks(data);
   }
@@ -123,6 +137,52 @@ export default function TasksPage() {
             Add Task
           </button>
         </div>
+      </div>
+
+      <div className="mb-4 flex gap-2 flex-wrap">
+        <select
+          value={filterUrgency}
+          onChange={(e) => setFilterUrgency(e.target.value)}
+          className="p-2 border rounded"
+        >
+          <option value="">All Urgencies</option>
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+
+        <select
+          value={filterPriority}
+          onChange={(e) => setFilterPriority(e.target.value)}
+          className="p-2 border rounded"
+        >
+          <option value="">All Priorities</option>
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="p-2 border rounded"
+        >
+          <option value="">All Statuses</option>
+          <option value="ToDo">To-Do</option>
+          <option value="InProgress">In Progress</option>
+          <option value="Finished">Finished</option>
+        </select>
+
+        <button
+          onClick={() => {
+            setFilterUrgency("");
+            setFilterPriority("");
+            setFilterStatus("");
+          }}
+          className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+        >
+          Reset
+        </button>
       </div>
 
       <div className="space-y-4">

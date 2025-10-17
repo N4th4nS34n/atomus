@@ -1,21 +1,29 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import type { Urgency, Priority, TaskStatus } from "@prisma/client";
 
 export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
   const { userId } = await params;
 
+  const url = new URL(req.url);
+  const urgency = url.searchParams.get("urgency") as Urgency | null;
+  const priority = url.searchParams.get("priority") as Priority | null;
+  const status = url.searchParams.get("status") as TaskStatus | null;
+
   try {
     const tasks = await prisma.task.findMany({
-      where: { createdById: userId },
-      orderBy: { createdAt: 'desc' },
+      where: {
+        createdById: userId,
+        ...(urgency ? { urgency } : {}),
+        ...(priority ? { priority } : {}),
+        ...(status ? { status } : {}),
+      },
+      orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json(tasks);
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { error: 'Failed to fetch tasks.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch tasks." }, { status: 500 });
   }
 }
