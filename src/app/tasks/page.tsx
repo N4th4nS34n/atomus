@@ -24,10 +24,12 @@ export default function TasksPage() {
   const [filterUrgency, setFilterUrgency] = useState("");
   const [filterPriority, setFilterPriority] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [sortBy, setSortBy] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
     fetchTasks();
-  }, [filterUrgency, filterPriority, filterStatus]);
+  }, [filterUrgency, filterPriority, filterStatus, sortBy, sortOrder]);
 
   useEffect(() => {
     if (status === "unauthenticated" || !session) {
@@ -47,6 +49,8 @@ export default function TasksPage() {
     if (filterUrgency) query.append("urgency", filterUrgency);
     if (filterPriority) query.append("priority", filterPriority);
     if (filterStatus) query.append("status", filterStatus);
+    if (sortBy) query.append("sortBy", sortBy);
+    if (sortOrder) query.append("sortOrder", sortOrder);
 
     const res = await fetch(`/api/tasks/user/${userId}?${query.toString()}`);
     const data = await res.json();
@@ -87,6 +91,22 @@ export default function TasksPage() {
       body: JSON.stringify({ taskId }),
     });
     fetchTasks();
+  }
+
+  const sortOrderMap = { High: 3, Medium: 2, Low: 1 };
+
+  let sortedTasks = [...tasks];
+
+  if (sortBy === "urgency") {
+    sortedTasks.sort((a, b) => (sortOrder === "asc" 
+        ? sortOrderMap[a.urgency] - sortOrderMap[b.urgency]
+        : sortOrderMap[b.urgency] - sortOrderMap[a.urgency]));
+  }
+
+  if (sortBy === "priority") {
+    sortedTasks.sort((a, b) => (sortOrder === "asc" 
+        ? sortOrderMap[a.priority] - sortOrderMap[b.priority]
+        : sortOrderMap[b.priority] - sortOrderMap[a.priority]));
   }
 
   return (
@@ -173,11 +193,34 @@ export default function TasksPage() {
           <option value="Finished">Finished</option>
         </select>
 
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="p-2 border rounded"
+        >
+          <option value="">Sort By</option>
+          <option value="createdAt">Creation Date</option>
+          <option value="urgency">Urgency</option>
+          <option value="priority">Priority</option>
+          <option value="status">Status</option>
+        </select>
+
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+          className="p-2 border rounded"
+        >
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+
         <button
           onClick={() => {
             setFilterUrgency("");
             setFilterPriority("");
             setFilterStatus("");
+            setSortBy("");
+            setSortOrder("asc");
           }}
           className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
         >
@@ -190,7 +233,7 @@ export default function TasksPage() {
           <p className="text-gray-600 italic">No tasks yet. Create one above!</p>
         )}
 
-        {tasks.map((task) => (
+        {sortedTasks.map((task) => (
           <div
             key={task.id}
             className="p-4 border rounded flex justify-between items-center"

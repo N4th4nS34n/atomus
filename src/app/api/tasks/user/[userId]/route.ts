@@ -9,6 +9,8 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
   const urgency = url.searchParams.get("urgency") as Urgency | null;
   const priority = url.searchParams.get("priority") as Priority | null;
   const status = url.searchParams.get("status") as TaskStatus | null;
+  const sortBy = url.searchParams.get("sortBy") as "createdAt" | "urgency" | "priority" | "status" | null;
+  const sortOrder = url.searchParams.get("sortOrder") as "asc" | "desc" | null;
 
   try {
     const tasks = await prisma.task.findMany({
@@ -18,7 +20,9 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
         ...(priority ? { priority } : {}),
         ...(status ? { status } : {}),
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: sortBy
+        ? { [sortBy]: sortOrder || "asc" }
+        : { createdAt: "desc" },
     });
 
     return NextResponse.json(tasks);
