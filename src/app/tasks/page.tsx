@@ -13,8 +13,6 @@ type Task = {
   status: 'ToDo' | 'InProgress' | 'Finished';
 };
 
-const userId = 'test-user-1';
-
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [title, setTitle] = useState('');
@@ -25,10 +23,12 @@ export default function TasksPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (status === "unauthenticated" || !session) {
       router.push("/login");
     }
   }, [status, router]);
+
+  const userId = session?.user.id;
 
   if (status === "loading") return <p>Loading...</p>;
   if (status === "unauthenticated") return null;
