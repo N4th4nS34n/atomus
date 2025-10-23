@@ -6,10 +6,7 @@ export async function PATCH(req: NextRequest) {
     const { taskId, title, description, urgency, priority, status } = await req.json();
 
     if (!taskId) {
-      return NextResponse.json(
-        { error: 'Task ID is required.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Task ID is required.' }, { status: 400 });
     }
 
     const updatedTask = await prisma.task.update({
@@ -26,11 +23,7 @@ export async function PATCH(req: NextRequest) {
     });
 
     return NextResponse.json(updatedTask);
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: 'Failed to update task.' },
-      { status: 500 }
-    );
+  } catch {
+    return NextResponse.json({ error: 'Failed to update task.' }, { status: 500 });
   }
 }

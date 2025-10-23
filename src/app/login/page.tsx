@@ -9,22 +9,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  async function handleLogin(e: React.FormEvent) {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-    });
+    const res = await signIn("credentials", { redirect: false, email, password });
     if (!res?.error) router.push("/tasks");
-  }
+  };
 
   return (
     <div className="flex items-center justify-center h-screen">
-      <form
-        onSubmit={handleLogin}
-        className="p-6 border rounded-lg shadow-md space-y-4 w-80"
-      >
+      <form onSubmit={handleLogin} className="p-6 border rounded-lg shadow-md space-y-4 w-80">
         <h1 className="text-2xl font-bold text-center">Login</h1>
         <input
           type="email"

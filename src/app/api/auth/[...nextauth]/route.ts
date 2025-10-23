@@ -16,30 +16,21 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
-
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
+        const user = await prisma.user.findUnique({ where: { email: credentials.email } });
         if (!user) return null;
-
         const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!isValid) return null;
-
         return { id: user.id, name: user.name, email: user.email };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
+    jwt({ token, user }) {
+      if (user) token.id = user.id;
       return token;
     },
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id as string;
-      }
+    session({ session, token }) {
+      if (token && session.user) session.user.id = token.id as string;
       return session;
     },
   },

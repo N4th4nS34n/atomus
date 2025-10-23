@@ -5,29 +5,20 @@ import bcrypt from "bcrypt";
 export async function POST(req: NextRequest) {
   try {
     const { name, email, password } = await req.json();
-
     if (!name || !email || !password) {
       return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
     }
 
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
+    const userExists = await prisma.user.findUnique({ where: { email } });
+    if (userExists) {
       return NextResponse.json({ error: "User already exists." }, { status: 400 });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({ data: { name, email, passwordHash } });
 
-    const newUser = await prisma.user.create({
-      data: {
-        name,
-        email,
-        passwordHash,
-      },
-    });
-
-    return NextResponse.json({ id: newUser.id, name: newUser.name, email: newUser.email });
-  } catch (error) {
-    console.error(error);
+    return NextResponse.json({ id: user.id, name: user.name, email: user.email });
+  } catch {
     return NextResponse.json({ error: "Failed to create user." }, { status: 500 });
   }
 }
