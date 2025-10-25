@@ -1,20 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { createTask } from "@/lib/tasks/create";
 
 export async function POST(req: NextRequest) {
   try {
-    const { title, description, urgency, priority, userId } = await req.json();
-
-    if (!title || !urgency || !priority || !userId) {
-      return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 });
-    }
-
-    const task = await prisma.task.create({
-      data: { title, description, urgency, priority, createdById: userId },
-    });
-
+    const data = await req.json();
+    const task = await createTask(data);
     return NextResponse.json(task, { status: 201 });
   } catch {
-    return NextResponse.json({ error: 'Failed to create task.' }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create task." }, { status: 500 });
   }
 }

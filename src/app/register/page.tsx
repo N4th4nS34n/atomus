@@ -1,15 +1,12 @@
 'use client';
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "@/hooks/useForm";
+import FormInput from "@/components/FormInput";
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const { form, handleChange } = useForm({ name: "", email: "", password: "" });
   const router = useRouter();
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,30 +24,9 @@ export default function RegisterPage() {
     <div className="flex items-center justify-center h-screen">
       <form onSubmit={handleRegister} className="p-6 border rounded-lg shadow-md space-y-4 w-80">
         <h1 className="text-2xl font-bold text-center">Register</h1>
-        <input
-          type="text"
-          name="name"
-          placeholder="Name"
-          value={form.name}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-        />
+        <FormInput type="text" name="name" value={form.name} placeholder="Name" onChange={handleChange} />
+        <FormInput type="email" name="email" value={form.email} placeholder="Email" onChange={handleChange} />
+        <FormInput type="password" name="password" value={form.password} placeholder="Password" onChange={handleChange} />
         <button type="submit" className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">
           Register
         </button>

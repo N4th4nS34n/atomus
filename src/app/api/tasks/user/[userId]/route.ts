@@ -1,29 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import type { Urgency, Priority, TaskStatus } from "@prisma/client";
+import { getUserTasks } from "@/lib/tasks/getUserTasks";
+import { Priority, TaskStatus, Urgency } from "@prisma/client";
 
-export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
-  const { userId } = params;
-  const url = new URL(req.url);
-  const urgency = url.searchParams.get("urgency") as Urgency | null;
-  const priority = url.searchParams.get("priority") as Priority | null;
-  const status = url.searchParams.get("status") as TaskStatus | null;
-  const sortBy = url.searchParams.get("sortBy") as "createdAt" | "urgency" | "priority" | "status" | null;
-  const sortOrder = url.searchParams.get("sortOrder") as "asc" | "desc" | null;
-
+export async function GET(req: NextRequest, context: { params: { userId: string } }) {
   try {
-    const tasks = await prisma.task.findMany({
-      where: {
-        createdById: userId,
-        ...(urgency && { urgency }),
-        ...(priority && { priority }),
-        ...(status && { status }),
-      },
-      orderBy: { [sortBy || "createdAt"]: sortOrder || (sortBy ? "asc" : "desc") },
+    const params = await context.params;
+
+    const url = new URL(req.url);
+    const tasks = await getUserTasks({
+      userId: params.userId,
+      urgency: url.searchParams.get("urgency") as Urgency,
+      priority: url.searchParams.get("priority") as Priority,
+      status: url.searchParams.get("status") as TaskStatus,
+      sortBy: url.searchParams.get("sortBy") as any,
+      sortOrder: url.searchParams.get("sortOrder") as any,
     });
 
     return NextResponse.json(tasks);
-  } catch {
+  } catch (err) {
+    console.error(err);
     return NextResponse.json({ error: "Failed to fetch tasks." }, { status: 500 });
   }
 }

@@ -1,29 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { updateTask } from "@/lib/tasks/update";
 
 export async function PATCH(req: NextRequest) {
   try {
-    const { taskId, title, description, urgency, priority, status } = await req.json();
-
-    if (!taskId) {
-      return NextResponse.json({ error: 'Task ID is required.' }, { status: 400 });
-    }
-
-    const updatedTask = await prisma.task.update({
-      where: { id: taskId },
-      data: {
-        title,
-        description,
-        urgency,
-        priority,
-        status,
-        inProgressAt: status === 'InProgress' ? new Date() : undefined,
-        finishedAt: status === 'Finished' ? new Date() : undefined,
-      },
-    });
-
-    return NextResponse.json(updatedTask);
+    const data = await req.json();
+    const task = await updateTask(data);
+    return NextResponse.json(task);
   } catch {
-    return NextResponse.json({ error: 'Failed to update task.' }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update task." }, { status: 500 });
   }
 }
